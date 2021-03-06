@@ -1,0 +1,4 @@
+---
+# handlers file for docker_reddit
+- name: systemd docker
+  systemd: name=docker state=started enabled=yes
