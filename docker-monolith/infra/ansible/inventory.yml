@@ -1,6 +1,0 @@
-docker:
-  hosts:
-    reddit-0:
-         ansible_host: 84.252.129.164
-    reddit-1:
-         ansible_host: 84.201.132.10
