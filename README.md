@@ -159,3 +159,60 @@ $ packer build -var-file=packer/variables.json packer/docker.json
   $ terraform plan
   $ terraform apply --auto-approve
   ```
+  ### Структуры 
+  - **Ansible**:
+  ```console
+  $ tree ansible/
+  ansible/
+  ├── ansible.cfg
+  ├── inventory.yml
+  ├── playbooks
+  │   ├── docker_install.yml
+  │   └── docker_reddit.yml
+  └── roles
+      ├── docker
+      │   ├── defaults
+      │   ├── files
+      │   ├── handlers
+      │   ├── meta
+      │   ├── README.md
+      │   ├── tasks
+      │   ├── templates
+      │   ├── tests
+      │   └── vars
+      └── docker_reddit
+          ├── defaults
+          ├── files
+          ├── handlers
+          ├── meta
+          ├── README.md
+          ├── tasks
+          ├── templates
+          ├── tests
+          └── vars
+  ```
+  - **Teraform**:
+  ```console
+  $ tree terraform
+    terraform/
+    ├── main.tf
+    ├── modules
+    │   └── docker_rdt
+    │       ├── files
+    │       │   └── inventory.tpl
+    │       ├── main.tf
+    │       ├── outputs.tf
+    │       └── variables.tf
+    ├── outputs.tf
+    ├── terraform.tfstate
+    ├── terraform.tfvars.example
+    └── variables.tf
+  ```
+  - **Packer**
+  ```console
+  $ tree packer
+  packer/
+  ├── docker.json
+  └── variables.json
+
+  ```
