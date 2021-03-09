@@ -1,9 +1,5 @@
 FROM python:3.6.0-alpine
 
-RUN apk --no-cache update \
-&& apk add --no-cache python py3-pip \
-&& rm -rf /var/cache/apk/*
-
 WORKDIR /app
 COPY . /app
 
