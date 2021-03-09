@@ -1,0 +1,10 @@
+cloud_id                 = "b1gee4v3ja8roftgcm8c"
+folder_id                = "b1g7papi0sdbued4dadh"
+zone                     = "ru-central1-a"
+public_key_path          = "~/.ssh/yc_rsa.pub"
+subnet_id                = "e9ba8jp5v3guqpaofe99"
+service_account_key_file = "../key.json"
+private_key_path         = "~/.ssh/yc_rsa"
+appcount                 = 2
+disk_image               = "fd866c1ja8ccnc4qnnl8"
+nmapp                    = "reddit"

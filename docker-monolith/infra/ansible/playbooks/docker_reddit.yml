@@ -1,0 +1,7 @@
+---
+- name: Run reddit as docker container
+  hosts: docker_reddit
+  become: true
+
+  roles:
+    - docker_reddit

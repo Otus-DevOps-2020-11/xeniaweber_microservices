@@ -1,0 +1,12 @@
+REPOSITORY               TAG       IMAGE ID       CREATED         SIZE
+ksenia/ubuntu-tmp-file   latest    aff5afae49ee   4 minutes ago   63.3MB
+nginx                    latest    35c43ace9216   12 days ago     133MB
+ubuntu                   18.04     c090eaba6b94   5 weeks ago     63.3MB
+hello-world              latest    bf756fb1ae65   14 months ago   13.3kB
+
+
+docker inspect <u_image_id>
+Docker образ состоит только из read-only слоев
+
+docker inspect <u_container_id>
+Контейнер - слой read-write, который запускается поверх read-only слоев в запущенном docker образе. Когда мы создаем из контейнера (read-write layer) образ, слой становится read-only

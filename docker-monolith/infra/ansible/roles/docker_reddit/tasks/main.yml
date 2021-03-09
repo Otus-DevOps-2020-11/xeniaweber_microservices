@@ -1,0 +1,8 @@
+---
+- name: Run docker container reddit
+  docker_container:
+    name: reddit
+    image: xweber/otus-reddit:1.0
+    state: started
+    ports:
+    - "9292:9292"
