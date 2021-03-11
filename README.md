@@ -1,5 +1,49 @@
 # xeniaweber_microservices
 xeniaweber microservices repository
+## Homework 13
+### Сборка приложений
+Для микросервисов были написаны докерфайлы:
+- [Dockerfile](https://github.com/Otus-DevOps-2020-11/xeniaweber_microservices/blob/docker-3/src/post-py/Dockerfile) - для **post-py**
+- [Dockerfile](https://github.com/Otus-DevOps-2020-11/xeniaweber_microservices/blob/docker-3/src/comment/Dockerfile) - для **comment**
+- [Dockerfile](https://github.com/Otus-DevOps-2020-11/xeniaweber_microservices/blob/docker-3/src/ui/Dockerfile) - для **ui**
+При билде образов замечаю, что **ui** начинает сборку не с первого шага. Причиной является сборка **comment** сделанная раннее. У **comment** и **ui** первые шаги одинаковые и нет необходимости их делать два раза. Во время сборки **ui** результат первых шагов берется из кэша. Т.е. эти слои уже существуют в системе.
+
+### Задание со * №1
+Для запуска контейнеров с другими алиасами, но без пересборки образа использую аргумент **-e** для **docker run**. С помощью данного аргумента я могу объявить переменные окружения. Так, например, если я меняю для **post** алиас - **--network-alias=post0**, то для **ui** при запуске контейнера указываю переменную окржуения **-e POST_SERVICE_HOST=post0**. Для полного запуска с другими алиасами написан скрипт - [docker-run-env.sh](https://github.com/Otus-DevOps-2020-11/xeniaweber_microservices/blob/docker-3/docker-run-env.sh)
+
+### Задание со * №2
+Докер образы могут весить много. Для оптимизации были внесены изменения в докерфайлы **сommit** и **ui**:
+- Образ **alpine** более леговесный
+```console
+ FROM alpine
+ ```
+- Так как ранее использовался образ **ruby**, а теперь **alpine**, необходимо установить **ruby**. Использую **--no-cache**, для установки **bundler** отменяю документацию **--no-document**. После всех установоки очищаю индекс пакета при помощи *rm -rf /var/cache/apk/*. Итого:
+```console
+RUN apk update --no-cache \
+&& apk add --no-cache ruby-full ruby-dev build-base \
+&& gem install bundler:1.17.2 --no-document \
+&& rm -rf /var/cache/apk/*
+```
+- После всей сборки удаляю **buil-base** (поняла уже при описании ДЗ, что также можно было удалить что-то еще, кроме этого пакета):
+```console
+RUN apk del build-base
+```
+- [Dockerfile1](https://github.com/Otus-DevOps-2020-11/xeniaweber_microservices/blob/docker-3/src/comment/Dockerfile1) для **comment**
+- [Dockerfile1](https://github.com/Otus-DevOps-2020-11/xeniaweber_microservices/blob/docker-3/src/ui/Dockerfile) для **ui**
+
+### Хранение данных
+Если остановить контейнеры и заново запустить, все изменения, сделанные до остановки, не сохранятся. Для хранения данных исполюзуются волюмы. Так как внесенные изменения хранятя в БД, создадим волюм для контейнера **mongo:latest**:
+```console
+$ docker volume create reddit_db
+```
+И запустим контейнер с волюмом:
+```console
+$ docker run -d --network=reddit \
+   --network-alias=post_db \
+   --network-alias=comment_db \ 
+   -v reddit_db:/data/db \
+  mongo:latest
+```
 ## Homework 12
 ### Задание со * №1
 Сравнила вывод двух команд:
