@@ -1,0 +1,46 @@
+version: '3.3'
+services:
+  post_db:
+    image: mongo:${TAG_MONGO}
+    volumes:
+      - post_db:${VOL_PATH_PD}
+    networks:
+      - back_net
+  ui:
+  #  build: ./${BUILD_UI}
+    image: ${USERNAME}/ui:${TAG_UI}
+    ports:
+      - ${PORT_UI}:9292/tcp
+    networks:
+      - front_net
+    command: ["puma", "-w", "2", "--debug"]
+  post:
+  #  build: ./${BUILD_POST}
+    image: ${USERNAME}/post:${TAG_POST}
+    networks:
+      - back_net
+      - front_net
+  comment:
+  #  build: ./${BUILD_COMMENT}
+    image: ${USERNAME}/comment:${TAG_COMMENT}
+    networks:
+      - back_net
+      - front_net
+    command: ["puma", "-w", "2", "--debug"]
+
+volumes:
+  post_db:
+
+networks:
+  back_net:
+     driver: bridge
+     ipam:
+       driver: default
+       config:
+         - subnet: 10.0.2.0/24
+  front_net:
+     driver: bridge
+     ipam:
+       driver: default
+       config:
+         - subnet: 10.0.1.0/24
