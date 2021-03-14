@@ -1,5 +1,96 @@
 # xeniaweber_microservices
 xeniaweber microservices repository
+
+## Homework 14
+### Самостоятельное задание
+### 1. Изменить docker-compose под кейс с множеством сетей (back_net, front_net)
+В **docker_compose** файл создаю сети **front_net** и **back_net**:
+```console
+networks:
+  back_net:
+     driver: bridge
+     ipam:
+       driver: default
+       config:
+         - subnet: 10.0.2.0/24
+  front_net:
+     driver: bridge
+     ipam:
+       driver: default
+       config:
+         - subnet: 10.0.1.0/24
+```
+Далее в разделе **network** для каждого сервиса указываю необходимую сеть. Так, например, для **ui** указана **front_net**, а для **post** указаны **front_net** и **back_net**.
+### 2. Параметризировать с помощью переменных окружения:
+- Порт публикации сервиса **ui**
+Порты указываются в разделе **ports**, порт публикации указывается первым. Параметризирую его. Итого для сервиса **ui** получаю следующую запись:
+```console
+ports:
+      - ${PORT_UI}:9292/tcp
+```
+- Версии сервисов
+Для **post_db**:
+```console
+image: mongo:${TAG_MONGO}
+```
+Для **ui**:
+```console
+image: ${USERNAME}/ui:${TAG_UI}
+```
+Для **post**:
+```console
+image: ${USERNAME}/post:${TAG_UI}
+```
+Для **comment**:
+```console
+image: ${USERNAME}/comment:${TAG_UI}
+```
+- На свое усмотрение:   
+Путь к контексту сборки:
+```console
+ui:
+    build: ./${BUILD_UI}
+-----------------------------
+post:
+    build: ./${BUILD_POST}
+-----------------------------
+comment:
+    build: ./${BUILD_COMMENT}
+```
+Путь к волюму для **post_db**:
+```console
+volumes:
+      - post_db:${VOL_PATH_PD}
+```
+### 3. Праметризированные параметры записать в файл .env
+Создан файл [.env](https://github.com/Otus-DevOps-2020-11/xeniaweber_microservices/blob/docker-4/src/.env.example)
+Закоммичен в репозиторий как **.env.examnple**
+### 4. Запуск образа без исопльзования export и source
+Запускаю **docker compose** командой:
+```console
+$ docker-compose up -d
+```
+Переменные подтягиваются из **.env**  
+В итоге получается такой [docker-compose.yml](https://github.com/Otus-DevOps-2020-11/xeniaweber_microservices/blob/docker-4/src/docker-compose.yml) файл
+
+### Имя проекта
+Базовое имя проекта образуется следующим образом - *<имя-директории>_<имя-контейнера>_<индекс>* 
+Чтобы задать имя проекта можно использовать опцию **-p, --project-name NAME** при запуске **docker-compose**
+
+### Задание со *
+Для того, чтобы запустить код приложения без сборки образа, применяю опции (например, указание переменных окружения, как в прошлом ДЗ) и убираю опцию **build**
+Как раз запуск **puma** c необходимыми опциями (дебаг и два воркера) - внесение изменений. В докерфайлах сервис **puma** запускается без опций. В **docker-compose** файл добавлю для сервисов опцию **comand**, в которой укажу каким образом мне нужно запустить **puma**. Получаю на примере **comment**:
+```console
+ comment:
+  #  build: ./${BUILD_COMMENT}
+    image: ${USERNAME}/comment:${TAG_COMMENT}
+    networks:
+      - back_net
+      - front_net
+    command: ["puma", "-w", "2", "--debug"]
+```
+В итоге вышел следующий [docker-compose.override.yml](https://github.com/Otus-DevOps-2020-11/xeniaweber_microservices/blob/docker-4/src/docker-compose.override.yml)
+
 ## Homework 13
 ### Сборка приложений
 Для микросервисов были написаны докерфайлы:
