@@ -4,6 +4,10 @@ timestamp=$(date +"%F"_"%T")
 
 echo "Set runner token"
 read run_token
+echo "Set name of VM"
+read vm_name
+
+EXT_IP=$(yc compute instance get --name $vm_name | sed -n '24p' | awk '{print $2}')
 
 echo "Add Runner"
 docker run -d --name gitlab-runner \
@@ -11,7 +15,7 @@ docker run -d --name gitlab-runner \
 
 echo "Register runner"
 docker exec -it gitlab-runner gitlab-runner register \
-    --url http://<your-ip>/ \
+    --url http://$EXT_IP/ \
     --non-interactive \
     --locked=false \
     --name DockerRunner_$timestamp \
