@@ -1,6 +1,103 @@
 # xeniaweber_microservices
 xeniaweber microservices repository
 
+## Homework 15
+Для GitlabCI была создана виртуальная машина. Использую скрипт со следующим содержанием:
+```console
+#!/bin/bash
+
+echo "Set VM name"
+read vmname
+
+echo "Set memory size"
+read msize
+
+echo "Set number of cores"
+read ncore
+
+echo "Set disk size"
+read dsize
+
+echo "Chose one value for disk type: 1.HDD, 2.SSD"
+read dtype
+case $dtype in
+  1) d=$(printf "network-hdd") ;;
+  2) d=$(printf "network-ssd") ;;
+esac
+
+echo "Chose one value for image-family: 1.ubuntu_18.04, 2.ubuntu_18.04_lts, 3.ubuntu_16.04_lts, 4.ubuntu_20.04_lts, 5.centos_6, 6.centos_7, 7.centos_8"
+read image
+case $image in
+  1) n=$(printf "ubuntu-1804") ;;
+  2) n=$(printf "ubuntu-1804-lts") ;;
+  3) n=$(printf "ubuntu-1604-lts") ;;
+  4) n=$(printf "ubuntu-2004-lts") ;;
+  5) n=$(printf "centos-6") ;;
+  6) n=$(printf "centos-7") ;;
+  7) n=$(printf "centos-8") ;;
+esac
+
+yc compute instance create \
+ --name $vmname \
+ --zone ru-central1-a \
+ --network-interface subnet-name=default-ru-central1-a,nat-ip-version=ipv4 \
+ --create-boot-disk image-folder-id=standard-images,image-family=$n,type=$d,size=$dsize> \
+ --ssh-key ~/.ssh/yc_rsa.pub \
+ --memory $msize \
+ --cores $ncore
+```
+Используя **docker-machine** устанавливаю **docker** на созаднном инстансе. Для этого выполняю bash скрипт со следующим содержанием: 
+```console
+#!/bin/bash
+
+echo "Set VM name"
+read vmname
+
+EXT_IP=$(yc compute instance get --name $vmname | sed -n '24p' | awk '{print $2}')
+
+docker-machine create \
+ --driver generic \
+ --generic-ip-address=$EXT_IP \
+ --generic-ssh-user yc-user \
+ --generic-ssh-key ~/.ssh/yc_rsa \
+docker-host
+```
+Создаю следующие директории:
+```console
+$ mkdir -p /srv/gitlab/{config,data,logs} 
+```
+В директории */srv/gitlab/* создаю файл **docker-compose.yml** со следующим содержимым:
+```console
+docker-compose.yml
+web:
+  image: 'gitlab/gitlab-ce:latest'
+  restart: always
+  hostname: 'gitlab.example.com'
+  environment:
+    GITLAB_OMNIBUS_CONFIG: |
+      external_url 'http://<YOUR-VM-IP>'
+  ports:
+    - '80:80'
+    - '443:443'
+    - '2222:22'
+  volumes:
+    - '/srv/gitlab/config:/etc/gitlab'
+    - '/srv/gitlab/logs:/var/log/gitlab'
+    - '/srv/gitlab/data:/var/opt/gitlab'
+```
+После успешного запуска контейнера могу видеть **GitlabCI**, если в браузере перейду по адресу VM - http://EXT_IP_VM
+
+В GitlabCI создан проект со следующим пайпланом для CI/CD: [.gitlab-ci.yml](https://github.com/Otus-DevOps-2020-11/xeniaweber_microservices/blob/gitlab-ci-1/.gitlab-ci.yml). При каждом push в репозиторий скрипт отрабатывает и согласно своему содержимому, проходит блоки: **build -> test -> review -> stage -> production**. Последние два не обязательны, а именно запускаются вручную при необходимости. Для этого используется *when: manual*. Автоматический сценарий выглядит как: *запуск билда -> тестирование -> деплой в dev*. При тестировании также вызывается скрипт [simpletest.rb](https://github.com/Otus-DevOps-2020-11/xeniaweber_microservices/blob/gitlab-ci-1/reddit/simpletest.rb).  
+**Важно!!!** пайплайн должен на чем-то запускаться. Для этого необходимо добавить и зарегистрировать **Runner**, на котором будет запускаться все.
+
+ ### Задание со *
+ Написан скрипт для автоматического добавления раннера.
+ - [autoaddrunner.shj](https://github.com/Otus-DevOps-2020-11/xeniaweber_microservices/blob/gitlab-ci-1/gitlab-ci/autoaddrunner.sh) 
+  
+ Скрипт собирает данные о VM, куда нужно установить и с помощью псевдотерминала по ssh выполняет следующий скрипт:
+ - [addreg.sh](https://github.com/Otus-DevOps-2020-11/xeniaweber_microservices/blob/gitlab-ci-1/gitlab-ci/addreg.sh)
+
+
 ## Homework 14
 ### Самостоятельное задание
 ### 1. Изменить docker-compose под кейс с множеством сетей (back_net, front_net)
